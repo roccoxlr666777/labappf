@@ -2,165 +2,148 @@ import streamlit as st
 import streamlit.components.v1 as components
 from datetime import date
 
-# --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Gestor Laboral Pro - México", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Consultor LFT Pro", layout="wide", initial_sidebar_state="expanded")
 
-# --- ESTILOS CSS (Interfaz Limpia y Tooltips) ---
+# --- ESTILOS DE DESPACHO ---
 st.markdown("""
 <style>
-    .reportview-container { background: #f8f9fa; }
-    .document-paper {
-        background: white;
-        padding: 60px;
-        border: 1px solid #dcdcdc;
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
-        font-family: 'Times New Roman', serif;
-        color: #1a1a1a;
-        line-height: 1.6;
-    }
-    .clause-nula {
-        text-decoration: line-through;
-        color: #d9534f;
-        background-color: #f9f2f4;
-        padding: 2px 4px;
-        border-radius: 4px;
-        cursor: help;
-    }
-    .legal-tag {
-        font-size: 0.8em;
-        padding: 3px 8px;
-        border-radius: 10px;
-        font-weight: bold;
+    .lft-article {
+        background-color: #f4f4f2;
+        padding: 20px;
+        border-left: 5px solid #1a3a5a;
+        font-family: 'Courier New', Courier, monospace;
+        color: #2c3e50;
         margin-bottom: 10px;
-        display: inline-block;
     }
-    .suspension { background: #fff3cd; color: #856404; }
-    .rescision { background: #f8d7da; color: #721c24; }
-    .terminacion { background: #d4edda; color: #155724; }
+    .example-box {
+        background-color: #e8f4fd;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px dashed #2980b9;
+        margin-top: 10px;
+    }
+    .reinicio-alerta {
+        color: #d35400;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.9em;
+    }
+    .document-body {
+        background-color: white;
+        padding: 45px;
+        border: 1px solid #000;
+        font-family: 'Times New Roman', Times, serif;
+        text-align: justify;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# --- PANEL LATERAL (CONTROLES) ---
+# --- PANEL LATERAL: CONTRATO FORMAL (ART. 25) ---
 with st.sidebar:
-    st.title("🛠️ Panel de Control")
-    st.info("Configura aquí los datos para generar el documento legal.")
+    st.title("📂 Gestión de Expediente")
+    modo = st.radio("Acción:", ["Redactar Contrato Art. 25", "Catálogo Art. 42, 47, 51, 53"])
     
-    opcion_menu = st.radio("Ir a:", ["📝 Redactor de Contrato", "📚 Catálogo de Incidencias (LFT)"])
-    
-    st.divider()
-    
-    if opcion_menu == "📝 Redactor de Contrato":
-        with st.expander("👤 Partes y Beneficiarios", expanded=True):
-            patron = st.text_input("Nombre del Patrón/Empresa", "Despacho Jurídico S.C.")
-            trabajador = st.text_input("Nombre del Trabajador", "Juan Pérez García")
-            beneficiarios = st.text_area("Beneficiarios (Art. 25-X)", "María Pérez (Hija), 50%; Luis Pérez (Hijo), 50%.")
-            
-        with st.expander("⏰ Jornada y Lugar", expanded=True):
-            tipo_contrato = st.selectbox("Duración", ["Tiempo Indeterminado", "Tiempo Determinado", "Obra Determinada"])
-            horario_detallado = st.text_input("Horario exacto", "Lun-Vie 09:00 a 18:00 (1h comida)")
-            lugar_labores = st.text_input("Lugar de Trabajo", "Av. Reforma 123, Puebla, Pue.")
-            
-        with st.expander("💰 Pago y Salario", expanded=True):
-            salario_diario = st.number_input("Salario Diario ($)", value=600.0)
-            fecha_pago = st.text_input("Periodicidad/Día de Pago", "Días 15 y 30 de cada mes")
-            forma_pago = st.selectbox("Método", ["Transferencia", "Efectivo", "Cheque"])
-            
-        with st.expander("🚫 Simulador de Cláusulas Nulas"):
-            nula_1 = st.checkbox("Renuncia a PTU/Aguinaldo")
-            nula_2 = st.checkbox("Jornada de 12 horas s/extra")
-            nula_3 = st.checkbox("Acepta descuentos por errores")
+    if modo == "Redactar Contrato Art. 25":
+        st.subheader("Datos del Proemio")
+        p_nom = st.text_input("Patrón / Empresa")
+        p_rfc = st.text_input("RFC Patrón")
+        p_dom = st.text_input("Domicilio Fiscal")
+        
+        st.divider()
+        t_nom = st.text_input("Trabajador")
+        t_curp = st.text_input("CURP")
+        t_rfc = st.text_input("RFC Trabajador")
+        t_nac = st.text_input("Nacionalidad", "Mexicana")
+        t_edad = st.number_input("Edad", 18, 99, 30)
+        t_sexo = st.selectbox("Sexo", ["Masculino", "Femenino"])
+        t_dom = st.text_input("Domicilio Particular")
+        
+        st.divider()
+        st.subheader("Condiciones Art. 25")
+        c_tipo = st.selectbox("Tipo (Art. 35)", ["Tiempo Indeterminado", "Tiempo Determinado", "Obra Determinada"])
+        c_serv = st.text_area("Servicios (Fracc. III - Precisión)")
+        c_lugar = st.text_input("Lugar de prestación (Fracc. IV)")
+        c_jornada = st.text_input("Jornada (Fracc. V - Horario y duración)")
+        c_salario = st.text_input("Salario (Monto y forma de pago)")
+        c_pago_dia = st.text_input("Día de Pago")
+        c_pago_lug = st.text_input("Lugar de Pago (Art. 108)")
+        c_ben = st.text_area("Beneficiarios (Fracc. X)")
 
 # --- ÁREA PRINCIPAL ---
-if opcion_menu == "📝 Redactor de Contrato":
-    st.header("Vista Previa del Contrato Laboral")
+if modo == "Redactar Contrato Art. 25":
+    st.header("Generador de Contrato Individual de Trabajo")
     
-    # Construcción dinámica del contrato
-    contrato_html = f"""
-    <div class="document-paper" id="printable">
-        <h2 style="text-align: center;">CONTRATO INDIVIDUAL DE TRABAJO</h2>
-        <p>En la ciudad de Puebla, México, a fecha de {date.today()}, celebran el presente contrato por una parte <b>{patron}</b> (EL PATRÓN) y por la otra <b>{trabajador}</b> (EL TRABAJADOR).</p>
+    html_contrato = f"""
+    <div class="document-body" id="print_area">
+        <h3 style="text-align:center">CONTRATO INDIVIDUAL DE TRABAJO</h3>
+        <p>CONTRATO QUE CELEBRAN POR UNA PARTE EL PATRÓN <b>{p_nom}</b>, CON RFC <b>{p_rfc}</b> Y DOMICILIO EN <b>{p_dom}</b>, Y POR LA OTRA EL TRABAJADOR <b>{t_nom}</b>, DE NACIONALIDAD <b>{t_nac}</b>, DE <b>{t_edad}</b> AÑOS, SEXO <b>{t_sexo}</b>, CON CURP <b>{t_curp}</b>, RFC <b>{t_rfc}</b> Y DOMICILIO EN <b>{t_dom}</b>, AL TENOR DE LAS SIGUIENTES:</p>
         
-        <p><b>PRIMERA. DURACIÓN:</b> El contrato se celebra por <b>{tipo_contrato}</b>.</p>
-        
-        <p><b>SEGUNDA. SERVICIOS:</b> El trabajador desempeñará sus funciones en {lugar_labores}.</p>
-        
-        <p><b>TERCERA. JORNADA:</b> Se pacta una jornada de: <b>{horario_detallado}</b>.</p>
-        
-        <p><b>CUARTA. SALARIO:</b> El patrón pagará la cantidad de <b>${salario_diario:,.2f}</b> diarios, mediante {forma_pago} los días {fecha_pago}.</p>
-        
-        <p><b>QUINTA. BENEFICIARIOS:</b> Para efectos del Art. 25, fracción X de la LFT, el trabajador designa a: <br><i>{beneficiarios}</i>.</p>
+        <h4 style="text-align:center">CLÁUSULAS</h4>
+        <p><b>PRIMERA. DURACIÓN.</b> El presente contrato se celebra por <b>{c_tipo}</b> de acuerdo al Art. 35 de la LFT.</p>
+        <p><b>SEGUNDA. SERVICIOS.</b> El trabajador se obliga a prestar sus servicios consistentes en: {c_serv}.</p>
+        <p><b>TERCERA. LUGAR.</b> El servicio se prestará en: {c_lugar}.</p>
+        <p><b>CUARTA. JORNADA.</b> La duración de la jornada será: {c_jornada}.</p>
+        <p><b>QUINTA. SALARIO.</b> El salario será de {c_salario}, pagaderos el día {c_pago_dia} en {c_pago_lug}.</p>
+        <p><b>SEXTA. BENEFICIARIOS.</b> Se designan como beneficiarios conforme al Art. 25 fracc. X a: {c_ben}.</p>
+    </div>
     """
-    
-    if nula_1 or nula_2 or nula_3:
-        contrato_html += "<p><b>SEXTA. DISPOSICIONES ADICIONALES (ANÁLISIS DE NULIDAD):</b><ul>"
-        if nula_1: contrato_html += '<li class="clause-nula">El trabajador renuncia al pago de utilidades y aguinaldo del presente año.</li>'
-        if nula_2: contrato_html += '<li class="clause-nula">Se pacta jornada extendida de 12 horas sin derecho a cobro de horas extraordinarias.</li>'
-        if nula_3: contrato_html += '<li class="clause-nula">El trabajador autoriza descuentos directos por errores en la operación sin límite legal.</li>'
-        contrato_html += "</ul><small><i>* Las cláusulas tachadas son nulas de pleno derecho (Art. 5 LFT).</i></small></p>"
-    
-    contrato_html += "</div>"
-    
-    st.markdown(contrato_html, unsafe_allow_html=True)
-    
-    if st.button("🖨️ Imprimir Documento"):
+    st.markdown(html_contrato, unsafe_allow_html=True)
+    if st.button("🖨️ Imprimir"):
         components.html("<script>window.parent.print();</script>", height=0)
 
 else:
-    # --- CATÁLOGO DE INCIDENCIAS MEJORADO ---
-    st.header("📚 Catálogo Legal: Suspensión, Rescisión y Terminación")
+    # --- CATÁLOGO LITERAL ---
+    st.header("📖 Diccionario Literal de la Ley Federal del Trabajo")
     
-    cat = st.selectbox("Seleccione el supuesto jurídico:", 
-                       ["Suspensión Temporal", "Rescisión (Despido Justificado)", "Rescisión (Retiro Justificado)", "Terminación y Casos Especiales"])
-    
-    if cat == "Suspensión Temporal":
-        incidencias = {
-            "Enfermedad Contagiosa (Art. 42-I)": {
-                "ejemplo": "Trabajador con diagnóstico médico de enfermedad infectocontagiosa.",
-                "inicio": "Desde la fecha del diagnóstico médico.",
-                "reinicio": "Al día siguiente de que cese la causa (Alta médica).",
-                "requisito": "Certificado de incapacidad del IMSS."
+    sel_art = st.selectbox("Seleccione el Artículo a consultar:", 
+                          ["Artículo 42 (Suspensión)", "Artículo 47 (Rescisión Patrón)", "Artículo 51 (Rescisión Trabajador)", "Artículo 53 (Terminación)"])
+
+    if sel_art == "Artículo 42 (Suspensión)":
+        st.markdown("#### **Artículo 42.** Son causas de suspensión temporal de las obligaciones de prestar el servicio y pagar el salario, sin responsabilidad para el trabajador y el patrón:")
+        
+        causales_42 = {
+            "I. La enfermedad contagiosa del trabajador.": {
+                "ejemplo": "Trabajador con diagnóstico de Varicela o COVID-19.",
+                "reinicio": "Art. 45-I: Al día siguiente de la fecha en que cese la causa."
             },
-            "Arresto del Trabajador (Art. 42-III)": {
-                "ejemplo": "Detención por faltas administrativas o delitos no relacionados con el trabajo.",
-                "inicio": "Desde el momento de la detención.",
-                "reinicio": "A los 15 días siguientes de la fecha en que el trabajador sea puesto en libertad.",
-                "requisito": "Copia de la boleta de libertad."
+            "III. El arresto del trabajador.": {
+                "ejemplo": "Detención por una falta administrativa (ej. alcoholímetro) de 36 horas.",
+                "reinicio": "Art. 45-II: Dentro de los 15 días siguientes a la fecha en que el trabajador recupere su libertad."
             },
-            "Contingencia Sanitaria (Art. 42 Bis)": {
-                "ejemplo": "Declaratoria oficial de la autoridad (ej. Pandemia).",
-                "inicio": "En la fecha de publicación del decreto.",
-                "reinicio": "Inmediatamente después de que termine la vigencia del decreto.",
-                "pago": "1 día de salario mínimo por cada día de suspensión (máximo 30 días)."
+            "VII. La falta de los documentos que exijan las Leyes, necesarios para la prestación del servicio.": {
+                "ejemplo": "Vencimiento de la licencia de conducir federal para un chofer.",
+                "reinicio": "Art. 45-I: Al día siguiente en que se obtengan los documentos."
             }
         }
         
-        sel = st.selectbox("Especifique la causal:", list(incidencias.keys()))
-        data = incidencias[sel]
-        
-        st.warning(f"### {sel}")
-        st.write(f"**Ejemplo práctico:** {data['ejemplo']}")
-        st.markdown(f"""
-        - **🕒 Inicia:** {data['inicio']}
-        - **🔄 Reinicio de labores:** {data['reinicio']}
-        - **📄 Documento clave:** {data.get('requisito', 'Aviso oficial')}
-        """)
+        for titulo, datos in causales_42.items():
+            with st.container():
+                st.markdown(f"<div class='lft-article'>{titulo}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='example-box'><b>Caso práctico:</b> {datos['ejemplo']}<br><span class='reinicio-alerta'>REINICIO: {datos['reinicio']}</span></div>", unsafe_allow_html=True)
 
-    elif cat == "Rescisión (Despido Justificado)":
-        st.error("### Causales de Rescisión (Art. 47 LFT)")
-        st.markdown("""
-        * **Faltas de probidad:** Actos de violencia contra el patrón o clientes.
-        * **Daños materiales:** Causar daños a herramientas o equipo de forma intencional.
-        * **Engaño:** Presentar certificados de estudio o habilidades falsas.
-        * **Inasistencias:** Más de 3 faltas en 30 días sin permiso ni causa justificada.
+    elif sel_art == "Artículo 47 (Rescisión Patrón)":
+        st.markdown("#### **Artículo 47.** Son causas de rescisión de la relación de trabajo, sin responsabilidad para el patrón:")
         
-        **Aviso de Rescisión:** El patrón debe entregar aviso escrito al trabajador o al Tribunal dentro de los 5 días hábiles siguientes.
-        """)
+        causales_47 = [
+            "I. Engañarlo el trabajador con certificados falsos o referencias en los que se atribuyan capacidades que carezca.",
+            "II. Incurrir el trabajador en faltas de probidad u honradez, en actos de violencia contra el patrón, sus familiares o personal directivo.",
+            "VIII. Cometer el trabajador actos inmorales o de hostigamiento y/o acoso sexual contra cualquier persona en el establecimiento.",
+            "X. Tener el trabajador más de tres faltas de asistencia en un período de treinta días, sin permiso del patrón o sin causa justificada.",
+            "XIII. La sentencia ejecutoriada que imponga al trabajador una pena de prisión, que le impida el cumplimiento de la relación de trabajo."
+        ]
         
-    elif cat == "Terminación y Casos Especiales":
-        col1, col2 = st.columns(2)
-        with col1:
-            st.success("#### Terminación Colectiva (Art. 434)")
-            st.write("- Cierre de empresa por incosteabilidad.\n- Agotamiento de la materia de una industria extractiva.\n- Concurso mercantil.")
-        with col2:
-            st.info("#### Recorte de Personal")
-            st.write("Si se reduce el personal, se debe respetar el escalafón: primero salen los de menor antigüedad.")
+        for c in causales_47:
+            st.markdown(f"<div class='lft-article'>{c}</div>", unsafe_allow_html=True)
+            if "faltas" in c:
+                st.info("💡 **Ejemplo:** El trabajador falta los días 1, 5, 10 y 15 del mes. Al cuarto día de inasistencia en ese rango de 30 días, se configura la causal.")
+
+    elif sel_art == "Artículo 53 (Terminación)":
+        st.markdown("#### **Artículo 53.** Son causas de terminación de las relaciones de trabajo:")
+        terminaciones = [
+            "I. El mutuo consentimiento de las partes;",
+            "II. La muerte del trabajador;",
+            "III. La terminación de la obra o vencimiento del término o inversión del capital (Art. 36, 37 y 38);",
+            "IV. La incapacidad física o mental o inhabilidad manifiesta del trabajador, que haga imposible la prestación del trabajo."
+        ]
+        for t in terminaciones:
+            st.markdown(f"<div class='lft-article'>{t}</div>", unsafe_allow_html=True)
