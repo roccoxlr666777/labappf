@@ -2,136 +2,165 @@ import streamlit as st
 import streamlit.components.v1 as components
 from datetime import date
 
-st.set_page_config(page_title="Consola Jurídica Laboral", layout="wide")
+# --- CONFIGURACIÓN DE PÁGINA ---
+st.set_page_config(page_title="Gestor Laboral Pro - México", layout="wide", initial_sidebar_state="expanded")
 
-# --- ESTILOS MEJORADOS ---
+# --- ESTILOS CSS (Interfaz Limpia y Tooltips) ---
 st.markdown("""
 <style>
-    .reportview-container { background: #f5f7f9; }
-    .main-card {
+    .reportview-container { background: #f8f9fa; }
+    .document-paper {
         background: white;
-        padding: 25px;
-        border-radius: 12px;
-        border-left: 8px solid #2c3e50;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        padding: 60px;
+        border: 1px solid #dcdcdc;
+        box-shadow: 5px 5px 15px rgba(0,0,0,0.05);
+        font-family: 'Times New Roman', serif;
+        color: #1a1a1a;
+        line-height: 1.6;
     }
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 15px;
-        font-size: 0.85em;
+    .clause-nula {
+        text-decoration: line-through;
+        color: #d9534f;
+        background-color: #f9f2f4;
+        padding: 2px 4px;
+        border-radius: 4px;
+        cursor: help;
+    }
+    .legal-tag {
+        font-size: 0.8em;
+        padding: 3px 8px;
+        border-radius: 10px;
         font-weight: bold;
+        margin-bottom: 10px;
+        display: inline-block;
     }
-    .suspension { background: #fff4e5; color: #b76e00; }
-    .rescision { background: #ffebee; color: #c62828; }
-    .terminacion { background: #e8f5e9; color: #2e7d32; }
+    .suspension { background: #fff3cd; color: #856404; }
+    .rescision { background: #f8d7da; color: #721c24; }
+    .terminacion { background: #d4edda; color: #155724; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- BASE DE DATOS JURÍDICA (CATÁLOGO COMPLETO) ---
-DB_LEGAL = {
-    "SUSPENSIÓN TEMPORAL": {
-        "Arresto del trabajador": {
-            "articulo": "Art. 42 Fracc. III",
-            "ejemplo": "El trabajador es detenido por un incidente de tránsito ajeno a la empresa por 72 horas.",
-            "inicio": "Desde que el trabajador acredite el arresto ante el patrón.",
-            "reinicio": "Al día siguiente de aquel en que la libertad sea otorgada.",
-            "tipo": "suspension"
-        },
-        "Enfermedad contagiosa": {
-            "articulo": "Art. 42 Fracc. I",
-            "ejemplo": "El trabajador presenta diagnóstico de tuberculosis o una infección que ponga en riesgo al resto.",
-            "inicio": "Desde la fecha en que el patrón tenga conocimiento.",
-            "reinicio": "Al día siguiente de que cese la causa o el IMSS otorgue el alta.",
-            "tipo": "suspension"
-        },
-        "Contingencia Sanitaria": {
-            "articulo": "Art. 42 Bis",
-            "ejemplo": "Declaratoria oficial de la Secretaría de Salud que ordene la suspensión de labores (ej. Pandemia).",
-            "inicio": "En la fecha que dicte la declaratoria oficial.",
-            "reinicio": "Inmediatamente después de que termine la vigencia de la declaratoria.",
-            "tipo": "suspension"
-        }
-    },
-    "RESCISIÓN (DESPIDO JUSTIFICADO)": {
-        "Faltas de Probidad": {
-            "articulo": "Art. 47 Fracc. II",
-            "ejemplo": "El trabajador sustrae mercancía de la bodega o altera registros de ventas para beneficio personal.",
-            "efecto": "Pérdida del empleo sin responsabilidad para el patrón.",
-            "pago": "Finiquito (Partes proporcionales únicamente).",
-            "tipo": "rescision"
-        },
-        "Inasistencias injustificadas": {
-            "articulo": "Art. 47 Fracc. X",
-            "ejemplo": "El trabajador falta los días lunes, martes, miércoles y jueves de la misma semana sin aviso.",
-            "detalle": "Más de 3 faltas en un periodo de 30 días.",
-            "tipo": "rescision"
-        }
-    },
-    "TERMINACIÓN": {
-        "Mutuo Consentimiento": {
-            "articulo": "Art. 53 Fracc. I",
-            "ejemplo": "Ambas partes firman un convenio de terminación voluntaria ante el Centro de Conciliación.",
-            "pago": "Gratificación negociada o finiquito de ley.",
-            "tipo": "terminacion"
-        },
-        "Incapacidad Física Manifiesta": {
-            "articulo": "Art. 53 Fracc. IV",
-            "ejemplo": "Un accidente fuera del trabajo deja al empleado con una invalidez permanente que impide realizar su puesto.",
-            "derecho": "Pago de un mes de salario y prima de antigüedad (Art. 54).",
-            "tipo": "terminacion"
-        }
-    }
-}
-
-# --- INTERFAZ ---
-st.title("⚖️ Consola Experta en Derecho Laboral")
-
-pestana_contrato, pestana_catalogo = st.tabs(["📄 Redactor de Contrato", "📚 Catálogo de Incidencias"])
-
-with pestana_contrato:
-    # (Mantener la lógica del contrato anterior, pero agregando los campos de horario y fecha de pago que solicitaste)
-    st.info("Utilice la barra lateral para configurar las cláusulas de este documento.")
-    # ... Lógica de redacción de contrato ...
-
-with pestana_catalogo:
-    st.subheader("Análisis de Incidencias en la Relación Laboral")
+# --- PANEL LATERAL (CONTROLES) ---
+with st.sidebar:
+    st.title("🛠️ Panel de Control")
+    st.info("Configura aquí los datos para generar el documento legal.")
     
-    col_nav, col_display = st.columns([1, 2])
+    opcion_menu = st.radio("Ir a:", ["📝 Redactor de Contrato", "📚 Catálogo de Incidencias (LFT)"])
     
-    with col_nav:
-        categoria = st.selectbox("Categoría Jurídica", list(DB_LEGAL.keys()))
-        causal_nombre = st.selectbox("Seleccione la Causal Específica", list(DB_LEGAL[categoria].keys()))
+    st.divider()
+    
+    if opcion_menu == "📝 Redactor de Contrato":
+        with st.expander("👤 Partes y Beneficiarios", expanded=True):
+            patron = st.text_input("Nombre del Patrón/Empresa", "Despacho Jurídico S.C.")
+            trabajador = st.text_input("Nombre del Trabajador", "Juan Pérez García")
+            beneficiarios = st.text_area("Beneficiarios (Art. 25-X)", "María Pérez (Hija), 50%; Luis Pérez (Hijo), 50%.")
+            
+        with st.expander("⏰ Jornada y Lugar", expanded=True):
+            tipo_contrato = st.selectbox("Duración", ["Tiempo Indeterminado", "Tiempo Determinado", "Obra Determinada"])
+            horario_detallado = st.text_input("Horario exacto", "Lun-Vie 09:00 a 18:00 (1h comida)")
+            lugar_labores = st.text_input("Lugar de Trabajo", "Av. Reforma 123, Puebla, Pue.")
+            
+        with st.expander("💰 Pago y Salario", expanded=True):
+            salario_diario = st.number_input("Salario Diario ($)", value=600.0)
+            fecha_pago = st.text_input("Periodicidad/Día de Pago", "Días 15 y 30 de cada mes")
+            forma_pago = st.selectbox("Método", ["Transferencia", "Efectivo", "Cheque"])
+            
+        with st.expander("🚫 Simulador de Cláusulas Nulas"):
+            nula_1 = st.checkbox("Renuncia a PTU/Aguinaldo")
+            nula_2 = st.checkbox("Jornada de 12 horas s/extra")
+            nula_3 = st.checkbox("Acepta descuentos por errores")
+
+# --- ÁREA PRINCIPAL ---
+if opcion_menu == "📝 Redactor de Contrato":
+    st.header("Vista Previa del Contrato Laboral")
+    
+    # Construcción dinámica del contrato
+    contrato_html = f"""
+    <div class="document-paper" id="printable">
+        <h2 style="text-align: center;">CONTRATO INDIVIDUAL DE TRABAJO</h2>
+        <p>En la ciudad de Puebla, México, a fecha de {date.today()}, celebran el presente contrato por una parte <b>{patron}</b> (EL PATRÓN) y por la otra <b>{trabajador}</b> (EL TRABAJADOR).</p>
         
-        info = DB_LEGAL[categoria][causal_nombre]
+        <p><b>PRIMERA. DURACIÓN:</b> El contrato se celebra por <b>{tipo_contrato}</b>.</p>
+        
+        <p><b>SEGUNDA. SERVICIOS:</b> El trabajador desempeñará sus funciones en {lugar_labores}.</p>
+        
+        <p><b>TERCERA. JORNADA:</b> Se pacta una jornada de: <b>{horario_detallado}</b>.</p>
+        
+        <p><b>CUARTA. SALARIO:</b> El patrón pagará la cantidad de <b>${salario_diario:,.2f}</b> diarios, mediante {forma_pago} los días {fecha_pago}.</p>
+        
+        <p><b>QUINTA. BENEFICIARIOS:</b> Para efectos del Art. 25, fracción X de la LFT, el trabajador designa a: <br><i>{beneficiarios}</i>.</p>
+    """
     
-    with col_display:
+    if nula_1 or nula_2 or nula_3:
+        contrato_html += "<p><b>SEXTA. DISPOSICIONES ADICIONALES (ANÁLISIS DE NULIDAD):</b><ul>"
+        if nula_1: contrato_html += '<li class="clause-nula">El trabajador renuncia al pago de utilidades y aguinaldo del presente año.</li>'
+        if nula_2: contrato_html += '<li class="clause-nula">Se pacta jornada extendida de 12 horas sin derecho a cobro de horas extraordinarias.</li>'
+        if nula_3: contrato_html += '<li class="clause-nula">El trabajador autoriza descuentos directos por errores en la operación sin límite legal.</li>'
+        contrato_html += "</ul><small><i>* Las cláusulas tachadas son nulas de pleno derecho (Art. 5 LFT).</i></small></p>"
+    
+    contrato_html += "</div>"
+    
+    st.markdown(contrato_html, unsafe_allow_html=True)
+    
+    if st.button("🖨️ Imprimir Documento"):
+        components.html("<script>window.parent.print();</script>", height=0)
+
+else:
+    # --- CATÁLOGO DE INCIDENCIAS MEJORADO ---
+    st.header("📚 Catálogo Legal: Suspensión, Rescisión y Terminación")
+    
+    cat = st.selectbox("Seleccione el supuesto jurídico:", 
+                       ["Suspensión Temporal", "Rescisión (Despido Justificado)", "Rescisión (Retiro Justificado)", "Terminación y Casos Especiales"])
+    
+    if cat == "Suspensión Temporal":
+        incidencias = {
+            "Enfermedad Contagiosa (Art. 42-I)": {
+                "ejemplo": "Trabajador con diagnóstico médico de enfermedad infectocontagiosa.",
+                "inicio": "Desde la fecha del diagnóstico médico.",
+                "reinicio": "Al día siguiente de que cese la causa (Alta médica).",
+                "requisito": "Certificado de incapacidad del IMSS."
+            },
+            "Arresto del Trabajador (Art. 42-III)": {
+                "ejemplo": "Detención por faltas administrativas o delitos no relacionados con el trabajo.",
+                "inicio": "Desde el momento de la detención.",
+                "reinicio": "A los 15 días siguientes de la fecha en que el trabajador sea puesto en libertad.",
+                "requisito": "Copia de la boleta de libertad."
+            },
+            "Contingencia Sanitaria (Art. 42 Bis)": {
+                "ejemplo": "Declaratoria oficial de la autoridad (ej. Pandemia).",
+                "inicio": "En la fecha de publicación del decreto.",
+                "reinicio": "Inmediatamente después de que termine la vigencia del decreto.",
+                "pago": "1 día de salario mínimo por cada día de suspensión (máximo 30 días)."
+            }
+        }
+        
+        sel = st.selectbox("Especifique la causal:", list(incidencias.keys()))
+        data = incidencias[sel]
+        
+        st.warning(f"### {sel}")
+        st.write(f"**Ejemplo práctico:** {data['ejemplo']}")
         st.markdown(f"""
-        <div class="main-card">
-            <h3>{causal_nombre}</h3>
-            <span class="status-badge {info['tipo']}">{categoria}</span>
-            <hr>
-            <p><b>📍 Fundamento:</b> {info['articulo']}</p>
-            <p><b>📖 Caso Práctico:</b> {info['ejemplo']}</p>
-        """, unsafe_allow_html=True)
-        
-        if categoria == "SUSPENSIÓN TEMPORAL":
-            st.markdown(f"""
-                <div style="background:#fffde7; padding:15px; border-radius:8px; border:1px solid #fbc02d;">
-                    <p style="margin:0;"><b>⏱️ Operatividad Temporal:</b></p>
-                    <ul>
-                        <li><b>Inicia:</b> {info['inicio']}</li>
-                        <li><b>Reinicio de labores:</b> {info['reinicio']}</li>
-                    </ul>
-                </div>
-            """, unsafe_allow_html=True)
-        elif categoria == "RESCISIÓN (DESPIDO JUSTIFICADO)":
-            st.markdown(f"<p style='color:red;'><b>⚠️ Consecuencia:</b> {info['efecto']}</p>", unsafe_allow_html=True)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
+        - **🕒 Inicia:** {data['inicio']}
+        - **🔄 Reinicio de labores:** {data['reinicio']}
+        - **📄 Documento clave:** {data.get('requisito', 'Aviso oficial')}
+        """)
 
-# --- IMAGEN DE APOYO VISUAL ---
-st.write("---")
-st.markdown("### Esquema de la Relación Laboral")
-st.image("https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&q=80&w=1000", 
-         caption="Gestión de Documentación y Cumplimiento Legal")
+    elif cat == "Rescisión (Despido Justificado)":
+        st.error("### Causales de Rescisión (Art. 47 LFT)")
+        st.markdown("""
+        * **Faltas de probidad:** Actos de violencia contra el patrón o clientes.
+        * **Daños materiales:** Causar daños a herramientas o equipo de forma intencional.
+        * **Engaño:** Presentar certificados de estudio o habilidades falsas.
+        * **Inasistencias:** Más de 3 faltas en 30 días sin permiso ni causa justificada.
+        
+        **Aviso de Rescisión:** El patrón debe entregar aviso escrito al trabajador o al Tribunal dentro de los 5 días hábiles siguientes.
+        """)
+        
+    elif cat == "Terminación y Casos Especiales":
+        col1, col2 = st.columns(2)
+        with col1:
+            st.success("#### Terminación Colectiva (Art. 434)")
+            st.write("- Cierre de empresa por incosteabilidad.\n- Agotamiento de la materia de una industria extractiva.\n- Concurso mercantil.")
+        with col2:
+            st.info("#### Recorte de Personal")
+            st.write("Si se reduce el personal, se debe respetar el escalafón: primero salen los de menor antigüedad.")
